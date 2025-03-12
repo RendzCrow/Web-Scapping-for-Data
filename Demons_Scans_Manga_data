@@ -1,0 +1,88 @@
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+import csv
+import time
+
+
+def extract(page):
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36'}
+    url = f"https://demonicscans.org/lastupdates.php?list={page}"
+    r = requests.get(url, headers)
+    try:
+        r = requests.get(url, headers=headers)
+        r.raise_for_status()  
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to access page {page}: {e}")
+        return None
+    
+    if r.status_code != 200:
+        print(f"Failed to access page {page}: Status Code {r.status_code}")
+        return None
+    
+    soup = BeautifulSoup(r.content, 'html.parser')
+    return soup
+
+
+def transform(soup):
+    divs = soup.find_all('div', class_='pd-1 full-width border-box')
+  
+    for item in divs:
+
+        manga = item.find('div', class_='updates-element-info ml flex flex-col justify-space-between full-width')  
+        if manga:
+            manga_name = manga.text.strip()
+        else:
+            manga_name = 'No manga available'
+
+        chapter_h = item.find('a', class_='chplinks') 
+        if chapter_h:
+            no_chapter = chapter_h.text.strip()
+        else:
+            no_chapter = 'No chapter available'
+        
+        date_released = item.find('a', class_='chplinks')  
+        if date_released:
+            date_of_chapter = date_released.text.strip()
+        else:
+            date_of_chapter = 'No date available'
+
+        manga_data = {
+            'manga_name': manga_name,
+            'no_chapter': no_chapter,
+            'date_released': date_of_chapter
+        }
+        manga_list.append(manga_data)
+    return
+
+
+manga_list = []
+# page = 1
+
+# while True:
+#     print(f"Scraping page {page}...")
+#     c = extract(page)
+#     if c:
+#         transform(c)
+#         page += 1
+#         time.sleep(2)  
+#     else:
+#         break
+
+for i in range(1, 5):
+    print(f"Scraping page {i}...")
+    c = extract(i)
+    if c:
+        transform(c)
+        time.sleep(2) 
+    else:
+        break
+
+df = pd.DataFrame(manga_list)
+print(df.head())
+# df.to_csv('Amazon_Phones.csv', index=False)
+
+
+
+
+
