@@ -11,3 +11,7 @@ with the loop introduced, the program scraps data untill the last page with the 
 Demonscans_manga_data
 
 The first atempt to scraping the data was sucsessful, but because there was no clear classes on the website, the data is unfinished. (maybe looking at changing what we trying to see from the data. thats a start.)
+
+Movie_Rating 
+
+The scraping is working, but only pulling informtion from the first movie need to explore more.
