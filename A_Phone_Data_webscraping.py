@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 import csv
+import time
 
 # Code that allows me to check if the website is accessible
 # The reqired results of the code is 200, if the result is 200 then the website is accessible.
@@ -12,7 +13,17 @@ def extract(page):
     r = requests.get(url, headers)
     # The code below is an advance method of checking if the website is accessible. within the function extract(page).
     #Before using the reurn r.status_code, make sure to comment out the return soup, below it.
-    # return r.status_code
+    try:
+        r = requests.get(url, headers=headers)
+        r.raise_for_status()  
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to access page {page}: {e}")
+        return None
+    
+    if r.status_code != 200:
+        print(f"Failed to access page {page}: Status Code {r.status_code}")
+        return None
+    
     soup = BeautifulSoup(r.content, 'html.parser')
     return soup
 #If you are not checking for the status code, please make sure that the code below is commented out.
@@ -56,19 +67,31 @@ def transform(soup):
 
 # The code below is used to check if the transform function is working correctly.
 #Make sure to comment out the rest of the code below the return phone_list.
-# c = extract(1)
+c = extract(1)
 # print(transform(c)) 
 
 
 phone_list = []
+page = 1
+
+# while True:
+#     print(f"Scraping page {page}...")
+#     c = extract(page)
+#     if c:
+#         transform(c)
+#         page += 1
+#         time.sleep(2)  # Add a delay to avoid blocking
+#     else:
+#         break
 
 for i in range(1, 20,1):
     c = extract(1)
     transform(c)
 
+
 df = pd.DataFrame(phone_list)
 print(df.head())
-df.to_csv('A_phones_data.csv')
+# df.to_csv('Amazon_Phones.csv', index=False)
 
     
 
