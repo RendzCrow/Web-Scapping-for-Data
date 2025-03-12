@@ -1,2 +1,3 @@
-# Amazon_Phone_Data
-First attempt to web scrapping using python, extracting phone data from Amazon.
+# Web Scaping 
+This is a folder hold all the data, I have scraped from different websites. 
+with Amazon phane data being my first time, building a program that scraps data.
