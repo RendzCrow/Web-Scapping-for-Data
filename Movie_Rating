@@ -1,0 +1,107 @@
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+import csv
+import time
+
+
+def extract(page):
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36'}
+    url = f"https://www.imdb.com/search/title/?title_type=feature&sort=num_votes,desc&start={(page - 1) * 50 + 1}"
+    try:
+        r = requests.get(url, headers=headers)
+        r.raise_for_status()  
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to access page {page}: {e}")
+        return None
+    
+    if r.status_code != 200:
+        print(f"Failed to access page {page}: Status Code {r.status_code}")
+        return None
+    
+    soup = BeautifulSoup(r.content, 'html.parser')
+    return soup
+
+
+def transform(soup):
+    divs = soup.find_all('div', class_='sc-8775c80f-3 eCksb') 
+    for item in divs:
+
+        movies = item.find('h3', class_='ipc-title__text')  
+        if movies:
+            movie_title = movies.text.strip()
+        else:
+            movie_title = 'No movie_title available'
+
+        year_released = item.find('span', class_='sc-44e0e03-7 fpyuJY dli-title-metadata-item') 
+        if year_released:
+            year = year_released.text.strip()
+        else:
+            year = 'No year of release available'
+        
+        run_time = item.find('div', class_='sc-44e0e03-6 liNdun dli-title-metadata')  
+        if run_time:
+            time = run_time.text.strip()
+        else:
+            time = 'No run_time available'
+
+        movie_rating = item.find('span', class_='ipc-rating-star--rating')  
+        if movie_rating:
+            rating = movie_rating.text.strip()
+        else:
+            time = 'No rating available'
+
+        no_votes = item.find('span', class_='ipc-rating-star--voteCount')  
+        if no_votes:
+            votes = no_votes.text.strip()
+        else:
+            votes = 'No votes available'
+
+        movie_des = item.find('div', class_='ipc-html-content-inner-div')  
+        if movie_des:
+            movie_description = movie_des.text.strip()
+        else:
+            movie_description = 'No description available'
+
+        manga_data = {
+            'movie_title': movie_title,
+            'year_released': year,
+            'run_time': time,
+            'movie_rating': rating,
+            'no_votes': votes,
+            'movie_description': movie_description
+        }
+        movie_list.append(manga_data)
+    return
+
+
+movie_list = []
+# page = 1
+
+# while True:
+#     print(f"Scraping page {page}...")
+#     c = extract(page)
+#     if c:
+#         transform(c)
+#         page += 1
+#         time.sleep(2)  
+#     else:
+#         break
+
+for i in range(1, 5):  
+    print(f"Scraping page {i}...")
+    c = extract(i)
+    if c:
+        transform(c)
+        time.sleep(2) 
+    else:
+        break
+
+df = pd.DataFrame(movie_list)
+print(df.head())
+# df.to_csv('IMDb_Movies.csv', index=False)
+
+
+
+
+
